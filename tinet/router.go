@@ -1,6 +1,6 @@
 package tinet
 
-import "tialloy/tiface"
+import "gihub.com/kanyuanzhi/tialloy/tiface"
 
 type BaseRouter struct{}
 

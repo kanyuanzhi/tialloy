@@ -1,16 +1,16 @@
 package tialloy
 
 import (
+	"gihub.com/kanyuanzhi/tialloy/tinet"
 	"io"
 	"log"
 	"net"
-	"tialloy/tinet"
 	"time"
 )
 
 type Client struct {
 	ClientID uint32
-	MsgID uint32
+	MsgID    uint32
 
 	Conn net.Conn
 }
@@ -39,7 +39,7 @@ func (c *Client) Start() {
 	}()
 
 	go func() {
-		for{
+		for {
 			dataHeadBuf := make([]byte, dp.GetHeadLen())
 			_, err = io.ReadFull(conn, dataHeadBuf)
 			if err != nil {
@@ -67,7 +67,7 @@ func (c *Client) Start() {
 		}
 	}()
 
-	time.Sleep(5*time.Second)
+	time.Sleep(5 * time.Second)
 	conn.Close()
 
 	for {
@@ -78,6 +78,6 @@ func (c *Client) Start() {
 func NewClient(clientID uint32, msgID uint32) *Client {
 	return &Client{
 		ClientID: clientID,
-		MsgID: msgID,
+		MsgID:    msgID,
 	}
 }

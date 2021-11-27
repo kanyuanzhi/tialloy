@@ -2,12 +2,12 @@ package tinet
 
 import (
 	"errors"
+	"gihub.com/kanyuanzhi/tialloy/tiface"
+	"gihub.com/kanyuanzhi/tialloy/utils"
 	"io"
 	"log"
 	"net"
 	"sync"
-	"tialloy/tiface"
-	"tialloy/utils"
 )
 
 type Connection struct {

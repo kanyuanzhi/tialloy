@@ -1,9 +1,9 @@
 package tinet
 
-import "tialloy/tiface"
+import "gihub.com/kanyuanzhi/tialloy/tiface"
 
 type Request struct {
-	conn tiface.IConnection
+	conn    tiface.IConnection
 	message tiface.IMessage
 }
 
@@ -21,7 +21,7 @@ func (r *Request) GetMsgID() uint32 {
 
 func NewRequest(conn tiface.IConnection, message tiface.IMessage) tiface.IRequest {
 	return &Request{
-		conn: conn,
+		conn:    conn,
 		message: message,
 	}
 }

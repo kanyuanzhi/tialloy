@@ -1,9 +1,9 @@
 package tinet
 
 import (
+	"gihub.com/kanyuanzhi/tialloy/tiface"
+	"gihub.com/kanyuanzhi/tialloy/utils"
 	"log"
-	"tialloy/tiface"
-	"tialloy/utils"
 )
 
 type MsgHandler struct {

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"tialloy/tiface"
-	"tialloy/utils"
+	"gihub.com/kanyuanzhi/tialloy/tiface"
+	"gihub.com/kanyuanzhi/tialloy/utils"
 )
 
 type DataPack struct {
@@ -43,11 +43,11 @@ func (d *DataPack) Unpack(binaryData []byte) (tiface.IMessage, error) {
 
 	message := &Message{} //只解压head的信息，得到dataLen和msgID
 
-	if err:=binary.Read(dataBuf, binary.BigEndian, &message.DataLen); err!=nil{
+	if err := binary.Read(dataBuf, binary.BigEndian, &message.DataLen); err != nil {
 		return nil, err
 	}
 
-	if err:=binary.Read(dataBuf, binary.BigEndian, &message.MsgID); err!=nil{
+	if err := binary.Read(dataBuf, binary.BigEndian, &message.MsgID); err != nil {
 		return nil, err
 	}
 

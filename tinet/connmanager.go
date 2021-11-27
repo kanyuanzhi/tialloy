@@ -3,9 +3,9 @@ package tinet
 import (
 	"errors"
 	"fmt"
+	"gihub.com/kanyuanzhi/tialloy/tiface"
 	"log"
 	"sync"
-	"tialloy/tiface"
 )
 
 type ConnManager struct {

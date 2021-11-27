@@ -2,11 +2,11 @@ package tinet
 
 import (
 	"fmt"
+	"gihub.com/kanyuanzhi/tialloy/tiface"
+	"gihub.com/kanyuanzhi/tialloy/utils"
 	"log"
 	"math/rand"
 	"net"
-	"tialloy/tiface"
-	"tialloy/utils"
 	"time"
 )
 
@@ -20,7 +20,7 @@ type Server struct {
 	connManager tiface.IConnManager
 
 	OnConnStart func(connection tiface.IConnection)
-	OnConnStop func(connection tiface.IConnection)
+	OnConnStop  func(connection tiface.IConnection)
 }
 
 func (s *Server) Start() {
@@ -49,7 +49,7 @@ func (s *Server) Start() {
 				return
 			}
 
-			if s.connManager.Len() >= utils.GlobalObject.MaxConn{
+			if s.connManager.Len() >= utils.GlobalObject.MaxConn {
 				// TODO:此处应通知客户端服务器拒绝服务?
 				conn.Close() // 超过服务器设置的最大TCP连接数，拒绝服务
 				continue
@@ -88,7 +88,6 @@ func (s *Server) GetConnManager() tiface.IConnManager {
 	return s.connManager
 }
 
-
 func (s *Server) SetOnConnStart(hookFunc func(connection tiface.IConnection)) {
 	s.OnConnStart = hookFunc
 }
@@ -98,17 +97,18 @@ func (s *Server) SetOnConnStop(hookFunc func(connection tiface.IConnection)) {
 }
 
 func (s *Server) CallOnConnStart(connection tiface.IConnection) {
-	if s.OnConnStart != nil{
+	if s.OnConnStart != nil {
 		log.Println("CallOnConnStart->")
 		s.OnConnStart(connection)
 	}
 }
 
 func (s *Server) CallOnConnStop(connection tiface.IConnection) {
-	if s.OnConnStop != nil{
+	if s.OnConnStop != nil {
 		log.Println("CallOnConnStop->")
 		s.OnConnStop(connection)
-	}}
+	}
+}
 
 func NewServer(name string) tiface.IServer {
 	//utils.GlobalObject.Reload()

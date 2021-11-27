@@ -1,8 +1,8 @@
 package tialloy
 
 import (
-	"gihub.com/kanyuanzhi/tialloy/tiface"
-	"gihub.com/kanyuanzhi/tialloy/tinet"
+	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tinet"
 	"log"
 	"testing"
 )

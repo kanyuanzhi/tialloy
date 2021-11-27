@@ -2,8 +2,8 @@ package tinet
 
 import (
 	"fmt"
-	"gihub.com/kanyuanzhi/tialloy/tiface"
-	"gihub.com/kanyuanzhi/tialloy/utils"
+	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/utils"
 	"log"
 	"math/rand"
 	"net"

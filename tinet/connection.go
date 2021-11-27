@@ -2,8 +2,8 @@ package tinet
 
 import (
 	"errors"
-	"gihub.com/kanyuanzhi/tialloy/tiface"
-	"gihub.com/kanyuanzhi/tialloy/utils"
+	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/utils"
 	"io"
 	"log"
 	"net"
@@ -72,8 +72,7 @@ func (c *Connection) StartReader() {
 			dataBuf = make([]byte, message.GetDataLen())
 			if _, err := io.ReadFull(c.GetTCPConnection(), dataBuf); err != nil {
 				log.Println("[ERROR][Connection][StartReader] read message data err", err.Error())
-				c.ExitBuffChan <- true
-				return
+				continue
 			}
 		}
 

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"gihub.com/kanyuanzhi/tialloy/tiface"
-	"gihub.com/kanyuanzhi/tialloy/utils"
+	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/utils"
 )
 
 type DataPack struct {

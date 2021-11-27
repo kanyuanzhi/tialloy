@@ -1,6 +1,6 @@
 package tinet
 
-import "gihub.com/kanyuanzhi/tialloy/tiface"
+import "github.com/kanyuanzhi/tialloy/tiface"
 
 type Request struct {
 	conn    tiface.IConnection

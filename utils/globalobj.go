@@ -2,7 +2,7 @@ package utils
 
 import (
 	"encoding/json"
-	"gihub.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tiface"
 	"io/ioutil"
 	"log"
 )

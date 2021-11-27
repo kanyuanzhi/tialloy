@@ -3,7 +3,7 @@ package tinet
 import (
 	"errors"
 	"fmt"
-	"gihub.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tiface"
 	"log"
 	"sync"
 )

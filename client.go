@@ -1,7 +1,7 @@
 package tialloy
 
 import (
-	"gihub.com/kanyuanzhi/tialloy/tinet"
+	"github.com/kanyuanzhi/tialloy/tinet"
 	"io"
 	"log"
 	"net"

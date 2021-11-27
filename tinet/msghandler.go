@@ -1,8 +1,8 @@
 package tinet
 
 import (
-	"gihub.com/kanyuanzhi/tialloy/tiface"
-	"gihub.com/kanyuanzhi/tialloy/utils"
+	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/utils"
 	"log"
 )
 

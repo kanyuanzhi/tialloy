@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"github.com/kanyuanzhi/tialloy/tiface"
 	"github.com/kanyuanzhi/tialloy/utils"
-	"log"
+	log "github.com/sirupsen/logrus"
+	//"log"
 	"math/rand"
 	"net"
 	"time"
@@ -24,6 +25,21 @@ type Server struct {
 }
 
 func (s *Server) Start() {
+	//utils.GlobalLog.Info("123")
+	log.WithFields(log.Fields{
+		"animal": "walrus",
+	}).Info("A walrus appears")
+	log.Info(123214)
+	//customFormatter := new(logrus.TextFormatter)
+	//customFormatter.TimestampFormat =  "2006-01-02 15:04:05"
+	//logrus.SetFormatter(customFormatter)
+	log.SetFormatter(&log.TextFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		FullTimestamp:   true,
+	})
+	//customFormatter.FullTimestamp = true
+	log.Info(123214)
+
 	log.Printf("[INFO][Server][START] Server listenner at %s:%d, is starting...\n", s.IP, s.Port)
 
 	go func() {

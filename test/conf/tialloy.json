@@ -1,0 +1,12 @@
+{
+  "name": "DataCenter-TCP",
+  "version": "V0.1",
+  "host": "127.0.0.1",
+  "tcp_port": 8888,
+  "max_packet_size": 512,
+  "max_conn": 3,
+  "worker_pool_size": 3,
+  "max_worker_task_len": 10,
+  "max_msg_chan_len": 20,
+  "log_mode": true
+}

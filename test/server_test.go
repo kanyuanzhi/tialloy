@@ -1,4 +1,4 @@
-package tialloy
+package test
 
 import (
 	"github.com/kanyuanzhi/tialloy/tiface"
@@ -41,7 +41,7 @@ func DoConnStopHook(connection tiface.IConnection) {
 }
 
 func TestServer(t *testing.T) {
-	server := tinet.NewServer("TiAlloy-Test")
+	server := tinet.NewServer()
 	server.AddRouter(1, &CustomRouter{})
 	server.AddRouter(2, &EchoRouter{})
 	server.SetOnConnStart(DoConnStartHook)

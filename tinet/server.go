@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/kanyuanzhi/tialloy/tiface"
 	"github.com/kanyuanzhi/tialloy/utils"
-	log "github.com/sirupsen/logrus"
-	//"log"
 	"math/rand"
 	"net"
 	"time"
@@ -25,43 +23,26 @@ type Server struct {
 }
 
 func (s *Server) Start() {
-	//utils.GlobalLog.Info("123")
-	log.WithFields(log.Fields{
-		"animal": "walrus",
-	}).Info("A walrus appears")
-	log.Info(123214)
-	//customFormatter := new(logrus.TextFormatter)
-	//customFormatter.TimestampFormat =  "2006-01-02 15:04:05"
-	//logrus.SetFormatter(customFormatter)
-	log.SetFormatter(&log.TextFormatter{
-		TimestampFormat: "2006-01-02 15:04:05",
-		FullTimestamp:   true,
-	})
-	//customFormatter.FullTimestamp = true
-	log.Info(123214)
-
-	log.Printf("[INFO][Server][START] Server listenner at %s:%d, is starting...\n", s.IP, s.Port)
-
+	utils.GlobalLog.Infof("server listenner at %s:%d is starting...", s.IP, s.Port)
 	go func() {
-
 		s.msgHandler.StartWorkerPool()
 
 		addr, err := net.ResolveTCPAddr(s.IPVersion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {
-			log.Println("[ERROR][Server][START][ResolveTCPAddr]", err.Error())
+			utils.GlobalLog.Error(err)
 			return
 		}
 		listener, err := net.ListenTCP(s.IPVersion, addr)
 		if err != nil {
-			log.Println("[ERROR][Server][START][ListenTCP]", err.Error())
+			utils.GlobalLog.Error(err)
 			return
 		}
-		log.Printf("[INFO][Server][START] The tiAlloy server %s is listening on %s:%d", s.Name, s.IP, s.Port)
+		utils.GlobalLog.Infof("%s server is listening on %s:%d", s.Name, s.IP, s.Port)
 
 		for {
 			conn, err := listener.AcceptTCP() // 阻塞等待客户端建立连接请求
 			if err != nil {
-				log.Println("[ERROR][Server][START][AcceptTCP]", err.Error())
+				utils.GlobalLog.Error(err)
 				return
 			}
 
@@ -82,7 +63,7 @@ func (s *Server) Start() {
 
 func (s *Server) Stop() {
 	//TODO 清理连接
-	fmt.Printf("[INFO][Server][STOP] Server listenner at IP: %s, Port %d, is stopped\n", s.IP, s.Port)
+	utils.GlobalLog.Warnf("%s server listenner at %s:%d stopped\n", s.Name, s.IP, s.Port)
 	s.connManager.ClearAllConn()
 }
 
@@ -114,20 +95,19 @@ func (s *Server) SetOnConnStop(hookFunc func(connection tiface.IConnection)) {
 
 func (s *Server) CallOnConnStart(connection tiface.IConnection) {
 	if s.OnConnStart != nil {
-		log.Println("CallOnConnStart->")
+		utils.GlobalLog.Tracef("call DoConnStartHook")
 		s.OnConnStart(connection)
 	}
 }
 
 func (s *Server) CallOnConnStop(connection tiface.IConnection) {
 	if s.OnConnStop != nil {
-		log.Println("CallOnConnStop->")
+		utils.GlobalLog.Tracef("call DoOnConnStopHook")
 		s.OnConnStop(connection)
 	}
 }
 
-func NewServer(name string) tiface.IServer {
-	//utils.GlobalObject.Reload()
+func NewServer() tiface.IServer {
 	return &Server{
 		Name:      utils.GlobalObject.Name,
 		IPVersion: "tcp4",

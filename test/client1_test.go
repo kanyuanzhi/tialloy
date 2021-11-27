@@ -1,4 +1,4 @@
-package tialloy
+package test
 
 import (
 	"testing"
@@ -6,10 +6,10 @@ import (
 )
 
 func TestClient1(t *testing.T) {
-	client := NewClient(1,1)
+	client := NewClient(1, 1)
 	client.Start()
-	time.Sleep(5*time.Second)
+	time.Sleep(5 * time.Second)
 	client.Conn.Close()
-	time.Sleep(100*time.Second)
+	time.Sleep(100 * time.Second)
 
 }

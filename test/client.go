@@ -1,4 +1,4 @@
-package tialloy
+package test
 
 import (
 	"github.com/kanyuanzhi/tialloy/tinet"

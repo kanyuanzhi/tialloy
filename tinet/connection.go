@@ -2,10 +2,10 @@ package tinet
 
 import (
 	"errors"
+	"fmt"
 	"github.com/kanyuanzhi/tialloy/tiface"
 	"github.com/kanyuanzhi/tialloy/utils"
 	"io"
-	"log"
 	"net"
 	"sync"
 )
@@ -45,8 +45,8 @@ func NewConnection(server tiface.IServer, conn *net.TCPConn, connID uint32, msgH
 }
 
 func (c *Connection) StartReader() {
-	log.Println("[Connection][StartReader] Reader Goroutine is running")
-	defer log.Printf("[Connection][StartReader] %s conn reader exit!", c.RemoteAddr())
+	utils.GlobalLog.Infof("reader goroutine for %s is running", c.RemoteAddr())
+	defer utils.GlobalLog.Warnf("reader goroutine for %s exited", c.RemoteAddr())
 	defer c.Stop()
 
 	for {
@@ -55,14 +55,14 @@ func (c *Connection) StartReader() {
 		dataHeadBuf := make([]byte, dp.GetHeadLen())
 
 		if _, err := io.ReadFull(c.GetTCPConnection(), dataHeadBuf); err != nil {
-			log.Println("[ERROR][Connection][StartReader] read message head err", err)
+			utils.GlobalLog.Error(err)
 			c.ExitBuffChan <- true
 			return
 		}
 
 		message, err := dp.Unpack(dataHeadBuf)
 		if err != nil {
-			log.Println("[ERROR][Connection][StartReader] unpack err", err.Error())
+			utils.GlobalLog.Error(err)
 			c.ExitBuffChan <- true
 			return
 		}
@@ -71,7 +71,7 @@ func (c *Connection) StartReader() {
 		if message.GetDataLen() > 0 {
 			dataBuf = make([]byte, message.GetDataLen())
 			if _, err := io.ReadFull(c.GetTCPConnection(), dataBuf); err != nil {
-				log.Println("[ERROR][Connection][StartReader] read message data err", err.Error())
+				utils.GlobalLog.Error(err)
 				continue
 			}
 		}
@@ -88,23 +88,24 @@ func (c *Connection) StartReader() {
 }
 
 func (c *Connection) StartWriter() {
-	log.Println("[Connection][StartWriter] Writer Goroutine is running")
-	defer log.Printf("[Connection][StartWriter] %s conn writer exit!", c.RemoteAddr())
+	utils.GlobalLog.Infof("writer goroutine for %s is running", c.RemoteAddr())
+	defer utils.GlobalLog.Warnf("writer goroutine for %s exited", c.RemoteAddr())
 	for {
 		select {
 		case data := <-c.msgChan:
 			if _, err := c.Conn.Write(data); err != nil {
-				log.Println("[Connection][StartWriter] Send data err")
+				utils.GlobalLog.Error(err)
 				return
 			}
 		case data, ok := <-c.msgBuffChan:
 			if ok {
 				if _, err := c.Conn.Write(data); err != nil {
-					log.Println("[Connection][StartWriter] Send data err")
+					utils.GlobalLog.Error(err)
 					return
 				}
 			} else {
-				log.Println("[Connection][StartWriter] Send data err")
+				// 通道关闭
+				utils.GlobalLog.Error("msgBuffChan has been closed")
 				break
 			}
 		case <-c.ExitBuffChan:
@@ -122,14 +123,13 @@ func (c *Connection) Start() {
 	for {
 		select {
 		case <-c.ExitBuffChan: // 得到退出消息，不再阻塞
-			//log.Println("[Connection][Start] stop reader")
 			return
 		}
 	}
 }
 
 func (c *Connection) Stop() {
-	log.Printf("Conn stop, connID=%d", c.ConnID)
+	utils.GlobalLog.Warnf("connection connID=%d stopped", c.ConnID)
 	if c.IsClosed == true {
 		return
 	}
@@ -165,8 +165,7 @@ func (c *Connection) SendMsg(messageID uint32, data []byte) error {
 	dp := NewDataPack()
 	binaryMessage, err := dp.Pack(NewMessage(messageID, data))
 	if err != nil {
-		log.Printf("[ERROR][Connection][SendMsg] pack message %d err, %s", messageID, err.Error())
-		return errors.New("pack message err")
+		return errors.New(fmt.Sprintf("pack messageID=%d err", messageID))
 	}
 
 	c.msgChan <- binaryMessage
@@ -182,8 +181,7 @@ func (c *Connection) SendBuffMsg(messageID uint32, data []byte) error {
 	dp := NewDataPack()
 	binaryMessage, err := dp.Pack(NewMessage(messageID, data))
 	if err != nil {
-		log.Printf("[ERROR][Connection][SendBuffMsg] pack message %d err, %s", messageID, err.Error())
-		return errors.New("pack message err")
+		return errors.New(fmt.Sprintf("pack messageID=%d err", messageID))
 	}
 
 	c.msgBuffChan <- binaryMessage

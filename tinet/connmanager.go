@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/kanyuanzhi/tialloy/tiface"
-	"log"
+	"github.com/kanyuanzhi/tialloy/utils"
 	"sync"
 )
 
@@ -28,7 +28,7 @@ func (cm *ConnManager) Add(conn tiface.IConnection) error {
 		return errors.New(fmt.Sprintf("connID=%d is exsited", conn.GetConnID()))
 	}
 	cm.connections[conn.GetConnID()] = conn
-	log.Printf("add connID=%d to connManager successfully, current conn num=%d", conn.GetConnID(), cm.Len())
+	utils.GlobalLog.Infof("add connID=%d to connManager successfully, current conn num=%d", conn.GetConnID(), cm.Len())
 	return nil
 }
 
@@ -37,7 +37,7 @@ func (cm *ConnManager) Remove(conn tiface.IConnection) {
 	defer cm.connLock.Unlock()
 
 	delete(cm.connections, conn.GetConnID())
-	log.Printf("remove connID=%d from connManager successfully, current conn num=%d", conn.GetConnID(), cm.Len())
+	utils.GlobalLog.Warnf("remove connID=%d from connManager successfully, current conn num=%d", conn.GetConnID(), cm.Len())
 }
 
 func (cm *ConnManager) Get(connID uint32) (tiface.IConnection, error) {
@@ -64,5 +64,5 @@ func (cm *ConnManager) ClearAllConn() {
 		// TODO:此处应通知客户端服务器关闭连接？
 		delete(cm.connections, connID)
 	}
-	log.Printf("clear all connections from connManager successfully, current conn num=%d", cm.Len())
+	utils.GlobalLog.Tracef("clear all connections from connManager successfully, current conn num=%d", cm.Len())
 }

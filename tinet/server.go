@@ -2,9 +2,9 @@ package tinet
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/kanyuanzhi/tialloy/tiface"
 	"github.com/kanyuanzhi/tialloy/utils"
-	"math/rand"
 	"net"
 	"time"
 )
@@ -52,8 +52,8 @@ func (s *Server) Start() {
 				continue
 			}
 
-			connID := rand.Uint32()
-
+			connID := uuid.New().String()
+			connID = "1"
 			dealConn := NewConnection(s, conn, connID, s.msgHandler)
 
 			go dealConn.Start()

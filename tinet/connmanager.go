@@ -9,13 +9,13 @@ import (
 )
 
 type ConnManager struct {
-	connections map[uint32]tiface.IConnection
+	connections map[string]tiface.IConnection
 	connLock    *sync.RWMutex
 }
 
 func NewConnManager() *ConnManager {
 	return &ConnManager{
-		connections: make(map[uint32]tiface.IConnection),
+		connections: make(map[string]tiface.IConnection),
 		connLock:    new(sync.RWMutex),
 	}
 }
@@ -25,10 +25,10 @@ func (cm *ConnManager) Add(conn tiface.IConnection) error {
 	defer cm.connLock.Unlock()
 
 	if _, ok := cm.connections[conn.GetConnID()]; ok {
-		return errors.New(fmt.Sprintf("connID=%d is exsited", conn.GetConnID()))
+		return errors.New(fmt.Sprintf("connID=%s repeated", conn.GetConnID()))
 	}
 	cm.connections[conn.GetConnID()] = conn
-	utils.GlobalLog.Infof("add connID=%d to connManager successfully, current conn num=%d", conn.GetConnID(), cm.Len())
+	utils.GlobalLog.Infof("add connID=%s to connManager, current conn num=%d", conn.GetConnID(), cm.Len())
 	return nil
 }
 
@@ -37,10 +37,10 @@ func (cm *ConnManager) Remove(conn tiface.IConnection) {
 	defer cm.connLock.Unlock()
 
 	delete(cm.connections, conn.GetConnID())
-	utils.GlobalLog.Warnf("remove connID=%d from connManager successfully, current conn num=%d", conn.GetConnID(), cm.Len())
+	utils.GlobalLog.Warnf("remove connID=%s from connManager, current conn num=%d", conn.GetConnID(), cm.Len())
 }
 
-func (cm *ConnManager) Get(connID uint32) (tiface.IConnection, error) {
+func (cm *ConnManager) Get(connID string) (tiface.IConnection, error) {
 	cm.connLock.RLocker()
 	defer cm.connLock.RUnlock()
 
@@ -64,5 +64,5 @@ func (cm *ConnManager) ClearAllConn() {
 		// TODO:此处应通知客户端服务器关闭连接？
 		delete(cm.connections, connID)
 	}
-	utils.GlobalLog.Tracef("clear all connections from connManager successfully, current conn num=%d", cm.Len())
+	utils.GlobalLog.Tracef("clear all connections from connManager, current conn num=%d", cm.Len())
 }

@@ -59,6 +59,6 @@ func (mh *MsgHandler) StartWorkerPool() {
 
 func (mh *MsgHandler) SendMsgToTaskQueue(request tiface.IRequest) {
 	workerID := request.GetMsgID() % mh.WorkerPoolSize
-	utils.GlobalLog.Tracef("add connID=%d, request msgID=%d to workerID=%d", request.GetConnection().GetConnID(), request.GetMsgID(), workerID)
+	utils.GlobalLog.Tracef("add connID=%s, request msgID=%d to workerID=%d", request.GetConnection().GetConnID(), request.GetMsgID(), workerID)
 	mh.TaskQueue[workerID] <- request
 }

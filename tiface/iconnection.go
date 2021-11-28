@@ -6,7 +6,7 @@ type IConnection interface {
 	Start()
 	Stop()
 	GetTCPConnection() *net.TCPConn
-	GetConnID() uint32
+	GetConnID() string
 	RemoteAddr() net.Addr
 
 	SendMsg(msgID uint32, data []byte) error

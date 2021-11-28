@@ -14,7 +14,7 @@ type Connection struct {
 	server tiface.IServer // server与connection可以互相索引，使得connection可以通过server.GetConnManager()操作connManager
 
 	Conn       *net.TCPConn
-	ConnID     uint32
+	ConnID     string
 	IsClosed   bool
 	MsgHandler tiface.IMsgHandler
 
@@ -27,7 +27,8 @@ type Connection struct {
 	propertyLock *sync.RWMutex
 }
 
-func NewConnection(server tiface.IServer, conn *net.TCPConn, connID uint32, msgHandler tiface.IMsgHandler) tiface.IConnection {
+func NewConnection(server tiface.IServer, conn *net.TCPConn, connID string, msgHandler tiface.IMsgHandler) tiface.IConnection {
+
 	c := &Connection{
 		server:       server,
 		Conn:         conn,
@@ -40,7 +41,8 @@ func NewConnection(server tiface.IServer, conn *net.TCPConn, connID uint32, msgH
 		property:     make(map[string]interface{}),
 		propertyLock: new(sync.RWMutex),
 	}
-	c.server.GetConnManager().Add(c) // 初始化新链接时将新链接加入到链接管理模块中
+	c.server.GetConnManager().Add(c) // 初始化新链接时将新链接加入到链接管理模块中,
+	// 采用uuid生成connID后，基本上不会有重复，因此此处不做错误处理
 	return c
 }
 
@@ -129,7 +131,7 @@ func (c *Connection) Start() {
 }
 
 func (c *Connection) Stop() {
-	utils.GlobalLog.Warnf("connection connID=%d stopped", c.ConnID)
+	utils.GlobalLog.Warnf("connection connID=%s stopped", c.ConnID)
 	if c.IsClosed == true {
 		return
 	}
@@ -149,7 +151,7 @@ func (c *Connection) GetTCPConnection() *net.TCPConn {
 	return c.Conn
 }
 
-func (c *Connection) GetConnID() uint32 {
+func (c *Connection) GetConnID() string {
 	return c.ConnID
 }
 

@@ -7,8 +7,8 @@ import (
 
 type BaseServer struct {
 	Name       string
-	ServerType string
-	IPVersion  string //tcp4 or other
+	ServerType string // tcp,websocket
+	IPVersion  string // tcp4 or other
 	IP         string
 	Port       int
 
@@ -26,7 +26,7 @@ func NewBaseServer(serverType string) *BaseServer {
 		IPVersion:  "tcp4",
 		IP:         utils.GlobalObject.Host,
 
-		msgHandler:  NewMsgHandler(),
+		msgHandler:  NewMsgHandler(serverType),
 		connManager: NewConnManager(),
 	}
 	switch serverType {

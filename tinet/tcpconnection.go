@@ -56,7 +56,7 @@ func (tc *TcpConnection) StartReader() {
 		message.SetData(dataBuf)
 		request := NewRequest(tc, message)
 
-		if utils.GlobalObject.WorkerPoolSize > 0 {
+		if utils.GlobalObject.TcpWorkerPoolSize > 0 {
 			go tc.MsgHandler.SendMsgToTaskQueue(request)
 		} else {
 			go tc.MsgHandler.DoMsgHandler(request)

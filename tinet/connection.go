@@ -36,9 +36,14 @@ func NewBaseConnection(server tiface.IServer, conn interface{}, connID uint32, m
 		MsgHandler:   msgHandler,
 		ExitBuffChan: make(chan bool, 1),
 		msgChan:      make(chan []byte),
-		msgBuffChan:  make(chan []byte, utils.GlobalObject.MaxMsgChanLen),
 		property:     make(map[string]interface{}),
 		propertyLock: new(sync.RWMutex),
+	}
+	switch server.GetServerType() {
+	case "tcp":
+		baseConnection.msgBuffChan = make(chan []byte, utils.GlobalObject.TcpMaxMsgChanLen)
+	case "websocket":
+		baseConnection.msgBuffChan = make(chan []byte, utils.GlobalObject.WebsocketMaxMsgChanLen)
 	}
 	return baseConnection
 }

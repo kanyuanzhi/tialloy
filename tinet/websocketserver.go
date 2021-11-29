@@ -27,8 +27,8 @@ func NewWebsocketServer() tiface.IServer {
 }
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  int(utils.GlobalObject.MaxPacketSize), //读取最大值
-	WriteBufferSize: int(utils.GlobalObject.MaxPacketSize), //写最大值
+	ReadBufferSize:  int(utils.GlobalObject.TcpMaxPacketSize), //读取最大值
+	WriteBufferSize: int(utils.GlobalObject.TcpMaxPacketSize), //写最大值
 	//解决跨域问题
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -42,9 +42,9 @@ func (ws *WebsocketServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ws.connManager.Len() >= utils.GlobalObject.MaxConn {
+	if ws.connManager.Len() >= utils.GlobalObject.TcpMaxConn {
 		// TODO:此处应通知客户端服务器拒绝服务?
-		utils.GlobalLog.Warnf("connection num reaches max %d", utils.GlobalObject.MaxConn)
+		utils.GlobalLog.Warnf("connection num reaches max %d", utils.GlobalObject.TcpMaxConn)
 		conn.Close() // 超过服务器设置的最大TCP连接数，拒绝服务
 		return
 	}

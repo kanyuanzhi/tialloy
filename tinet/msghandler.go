@@ -6,24 +6,35 @@ import (
 )
 
 type MsgHandler struct {
-	Apis           map[uint32]tiface.IRouter // Apis[msgID] = handler
-	WorkerPoolSize uint32
-	TaskQueue      []chan tiface.IRequest
+	Apis             map[uint32]tiface.IRouter // Apis[msgID] = handler
+	ServerType       string
+	WorkerPoolSize   uint32
+	MaxWorkerTaskLen uint32
+	TaskQueue        []chan tiface.IRequest
 }
 
-func NewMsgHandler() *MsgHandler {
-	return &MsgHandler{
-		Apis:           make(map[uint32]tiface.IRouter),
-		WorkerPoolSize: utils.GlobalObject.WorkerPoolSize,
-		TaskQueue:      make([]chan tiface.IRequest, utils.GlobalObject.WorkerPoolSize),
+func NewMsgHandler(serverType string) tiface.IMsgHandler {
+	msgHandler := &MsgHandler{
+		Apis:       make(map[uint32]tiface.IRouter),
+		ServerType: serverType,
 	}
+	switch serverType {
+	case "tcp":
+		msgHandler.WorkerPoolSize = utils.GlobalObject.TcpWorkerPoolSize
+		msgHandler.MaxWorkerTaskLen = utils.GlobalObject.TcpMaxWorkerTaskLen
+	case "websocket":
+		msgHandler.WorkerPoolSize = utils.GlobalObject.WebsocketWorkerPoolSize
+		msgHandler.MaxWorkerTaskLen = utils.GlobalObject.WebsocketMaxWorkerTaskLen
+	}
+	msgHandler.TaskQueue = make([]chan tiface.IRequest, msgHandler.WorkerPoolSize)
+	return msgHandler
 }
 
 func (mh *MsgHandler) DoMsgHandler(request tiface.IRequest) {
 	msgID := request.GetMsgID()
 	handler, ok := mh.Apis[msgID]
 	if !ok {
-		utils.GlobalLog.Warnf("api msgID=%d is not found", msgID)
+		utils.GlobalLog.Warnf("%s api msgID=%d is not found", mh.ServerType, msgID)
 		return
 	}
 	handler.PreHandle(request)
@@ -33,15 +44,15 @@ func (mh *MsgHandler) DoMsgHandler(request tiface.IRequest) {
 
 func (mh *MsgHandler) AddRouter(msgID uint32, router tiface.IRouter) {
 	if _, ok := mh.Apis[msgID]; ok {
-		utils.GlobalLog.Warnf("api msgID=%d repeated", msgID)
+		utils.GlobalLog.Warnf("%s api msgID=%d repeated", mh.ServerType, msgID)
 		return
 	}
 	mh.Apis[msgID] = router
-	utils.GlobalLog.Tracef("api msgID=%d added", msgID)
+	utils.GlobalLog.Tracef("%s api msgID=%d added", mh.ServerType, msgID)
 }
 
 func (mh *MsgHandler) StartOneWorkerPool(workerID int, taskQueue chan tiface.IRequest) {
-	utils.GlobalLog.Tracef("worker id=%d started", workerID)
+	utils.GlobalLog.Tracef("%s worker id=%d started", mh.ServerType, workerID)
 	for {
 		select {
 		case request := <-taskQueue:
@@ -52,13 +63,13 @@ func (mh *MsgHandler) StartOneWorkerPool(workerID int, taskQueue chan tiface.IRe
 
 func (mh *MsgHandler) StartWorkerPool() {
 	for i := 0; i < int(mh.WorkerPoolSize); i++ {
-		mh.TaskQueue[i] = make(chan tiface.IRequest, utils.GlobalObject.MaxWorkerTaskLen)
+		mh.TaskQueue[i] = make(chan tiface.IRequest, mh.MaxWorkerTaskLen)
 		go mh.StartOneWorkerPool(i, mh.TaskQueue[i])
 	}
 }
 
 func (mh *MsgHandler) SendMsgToTaskQueue(request tiface.IRequest) {
 	workerID := request.GetConnection().GetConnID() % mh.WorkerPoolSize
-	utils.GlobalLog.Tracef("add %s connID=%d, request msgID=%d to workerID=%d", request.GetConnection().GetServer().GetServerType(), request.GetConnection().GetConnID(), request.GetMsgID(), workerID)
+	utils.GlobalLog.Tracef("%s add connID=%d, request msgID=%d to workerID=%d", mh.ServerType, request.GetConnection().GetConnID(), request.GetMsgID(), workerID)
 	mh.TaskQueue[workerID] <- request
 }

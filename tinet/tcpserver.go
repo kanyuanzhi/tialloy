@@ -44,7 +44,7 @@ func (ts *TcpServer) Start() {
 				return
 			}
 
-			if ts.connManager.Len() >= utils.GlobalObject.MaxConn {
+			if ts.connManager.Len() >= utils.GlobalObject.TcpMaxConn {
 				// TODO:此处应通知客户端服务器拒绝服务?
 				conn.Close() // 超过服务器设置的最大TCP连接数，拒绝服务
 				continue

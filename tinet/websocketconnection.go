@@ -48,7 +48,7 @@ func (wc *WebsocketConnection) StartReader() {
 			message := NewMessage(uint32(msgID.(float64)), data)
 			request := NewRequest(wc, message)
 
-			if utils.GlobalObject.WorkerPoolSize > 0 {
+			if utils.GlobalObject.WebsocketWorkerPoolSize > 0 {
 				go wc.MsgHandler.SendMsgToTaskQueue(request)
 			} else {
 				go wc.MsgHandler.DoMsgHandler(request)

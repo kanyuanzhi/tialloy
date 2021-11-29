@@ -51,7 +51,7 @@ func (d *DataPack) Unpack(binaryData []byte) (tiface.IMessage, error) {
 		return nil, err
 	}
 
-	if utils.GlobalObject.MaxPacketSize > 0 && message.DataLen > utils.GlobalObject.MaxPacketSize {
+	if utils.GlobalObject.TcpMaxPacketSize > 0 && message.DataLen > utils.GlobalObject.TcpMaxPacketSize {
 		return nil, errors.New("received data size is larger than max packet size")
 	}
 

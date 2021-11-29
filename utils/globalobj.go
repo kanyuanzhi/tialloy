@@ -12,19 +12,24 @@ type GlobalObj struct {
 	Version string `json:"version,omitempty"`
 	Host    string `json:"host,omitempty"`
 
-	TcpServer        tiface.IServer `json:"tcp_server,omitempty"`
-	TcpPort          int            `json:"tcp_port,omitempty"`
-	MaxPacketSize    uint32         `json:"max_packet_size,omitempty"`
-	MaxConn          int            `json:"max_conn,omitempty"`
-	WorkerPoolSize   uint32         `json:"worker_pool_size,omitempty"`    // 工作池大小
-	MaxWorkerTaskLen uint32         `json:"max_worker_task_len,omitempty"` // 每个工作池处理的消息队列长度
-	MaxMsgChanLen    uint32         `json:"max_msg_chan_len,omitempty"`    // 缓冲数据通道最大缓冲数量
+	// tcp settings
+	TcpServer           tiface.IServer `json:"tcp_server,omitempty"`
+	TcpPort             int            `json:"tcp_port,omitempty"`
+	TcpMaxPacketSize    uint32         `json:"tcp_max_packet_size,omitempty"`
+	TcpMaxConn          int            `json:"tcp_max_conn,omitempty"`
+	TcpWorkerPoolSize   uint32         `json:"tcp_worker_pool_size,omitempty"`    // 工作池大小
+	TcpMaxWorkerTaskLen uint32         `json:"tcp_max_worker_task_len,omitempty"` // 每个工作池处理的消息队列长度
+	TcpMaxMsgChanLen    uint32         `json:"tcp_max_msg_chan_len,omitempty"`    // 缓冲数据通道最大缓冲数量
 
-	WebsocketServer         tiface.IServer `json:"websocket_server,omitempty"`
-	WebsocketPort           int            `json:"websocket_port,omitempty"`
-	WebsocketPath           string         `json:"websocket_path,omitempty"`
-	WebsocketMaxConn        int            `json:"websocket_max_conn,omitempty"`
-	WebsocketWorkerPoolSize uint32         `json:"websocket_worker_pool_size,omitempty"` // 工作池大小
+	// websocket settings
+	WebsocketServer           tiface.IServer `json:"websocket_server,omitempty"`
+	WebsocketPort             int            `json:"websocket_port,omitempty"`
+	WebsocketScheme           string         `json:"websocket_scheme,omitempty"` // websocket协议，ws、wss
+	WebsocketPath             string         `json:"websocket_path,omitempty"`   // websocket请求路径
+	WebsocketMaxConn          int            `json:"websocket_max_conn,omitempty"`
+	WebsocketWorkerPoolSize   uint32         `json:"websocket_worker_pool_size,omitempty"`
+	WebsocketMaxWorkerTaskLen uint32         `json:"websocket_max_worker_task_len,omitempty"`
+	WebsocketMaxMsgChanLen    uint32         `json:"websocket_max_msg_chan_len,omitempty"`
 
 	LogMode bool `json:"log_mode,omitempty"`
 }
@@ -58,21 +63,23 @@ func init() {
 		Version: "V0.1",
 		Host:    "127.0.0.1",
 
-		TcpServer:        nil,
-		TcpPort:          8888,
-		MaxPacketSize:    4096,
-		MaxConn:          1000,
-		WorkerPoolSize:   20,
-		MaxWorkerTaskLen: 10,
-		MaxMsgChanLen:    20,
+		TcpServer:           nil,
+		TcpPort:             8888,
+		TcpMaxPacketSize:    4096,
+		TcpMaxConn:          1000,
+		TcpWorkerPoolSize:   20,
+		TcpMaxWorkerTaskLen: 10,
+		TcpMaxMsgChanLen:    20,
 
-		WebsocketServer:         nil,
-		WebsocketPort:           10000,
-		WebsocketPath:           "touch",
-		WebsocketMaxConn:        10000,
-		WebsocketWorkerPoolSize: 20,
+		WebsocketServer:           nil,
+		WebsocketPort:             10000,
+		WebsocketPath:             "touch",
+		WebsocketMaxConn:          10000,
+		WebsocketWorkerPoolSize:   20,
+		WebsocketMaxWorkerTaskLen: 10,
+		WebsocketMaxMsgChanLen:    20,
 
-		LogMode: true, // true：详细，打印log输出位置；false：简要，不打印文件输出位置，不打印debug和trace（性能高，生产环境使用）
+		LogMode: true, // true：详细，打印log在代码中输出位置；false：简要，不打印文件输出位置，不打印debug和trace（性能高，生产环境使用）
 	}
 
 	GlobalObject.Reload()

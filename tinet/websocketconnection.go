@@ -29,7 +29,7 @@ func (wc *WebsocketConnection) StartReader() {
 	defer wc.Stop()
 
 	for {
-		msgType, data, err := wc.Conn.(*websocket.Conn).ReadMessage()
+		msgType, data, err := wc.GetWebsocketConn().ReadMessage()
 		if err != nil {
 			utils.GlobalLog.Error(err)
 			wc.ExitBuffChan <- true
@@ -65,13 +65,13 @@ func (wc *WebsocketConnection) StartWriter() {
 	for {
 		select {
 		case data := <-wc.msgChan:
-			if err := wc.Conn.(*websocket.Conn).WriteMessage(wc.MessageType, data); err != nil {
+			if err := wc.GetWebsocketConn().WriteMessage(wc.MessageType, data); err != nil {
 				utils.GlobalLog.Error(err)
 				return
 			}
 		case data, ok := <-wc.msgBuffChan:
 			if ok {
-				if err := wc.Conn.(*websocket.Conn).WriteMessage(wc.MessageType, data); err != nil {
+				if err := wc.GetWebsocketConn().WriteMessage(wc.MessageType, data); err != nil {
 					utils.GlobalLog.Error(err)
 					return
 				}

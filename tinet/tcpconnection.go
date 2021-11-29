@@ -70,13 +70,13 @@ func (tc *TcpConnection) StartWriter() {
 	for {
 		select {
 		case data := <-tc.msgChan:
-			if _, err := tc.Conn.(*net.TCPConn).Write(data); err != nil {
+			if _, err := tc.GetTcpConn().Write(data); err != nil {
 				utils.GlobalLog.Error(err)
 				return
 			}
 		case data, ok := <-tc.msgBuffChan:
 			if ok {
-				if _, err := tc.Conn.(*net.TCPConn).Write(data); err != nil {
+				if _, err := tc.GetTcpConn().Write(data); err != nil {
 					utils.GlobalLog.Error(err)
 					return
 				}
@@ -136,6 +136,5 @@ func (tc *TcpConnection) SendBuffMsg(msgID uint32, data []byte) error {
 	}
 
 	tc.msgBuffChan <- binaryMessage
-
 	return nil
 }

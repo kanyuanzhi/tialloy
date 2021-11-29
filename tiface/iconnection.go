@@ -1,12 +1,16 @@
 package tiface
 
-import "net"
+import (
+	"net"
+)
 
 type IConnection interface {
 	Start()
 	Stop()
-	GetTCPConnection() *net.TCPConn
-	GetConnID() string
+
+	GetConn() interface{}
+
+	GetConnID() uint32
 	RemoteAddr() net.Addr
 
 	SendMsg(msgID uint32, data []byte) error
@@ -15,6 +19,6 @@ type IConnection interface {
 	SetProperty(key string, value interface{})
 	GetProperty(key string) (interface{}, error)
 	RemoveProperty(key string)
-}
 
-type HandleFunc func(*net.TCPConn, []byte, int) error
+	GetServer() IServer
+}

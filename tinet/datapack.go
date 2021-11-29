@@ -16,7 +16,7 @@ func NewDataPack() *DataPack {
 }
 
 func (d *DataPack) GetHeadLen() uint32 {
-	//MsgID uint32(4字节) +  DataLen uint32(4字节)
+	//DataLen uint32(4字节) + MsgID uint32(4字节)
 	return 8
 }
 

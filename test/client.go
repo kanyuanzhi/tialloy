@@ -17,6 +17,7 @@ type Client struct {
 
 func (c *Client) Start() {
 	log.Println("Client start")
+
 	conn, err := net.Dial("tcp", "127.0.0.1:8888")
 	c.Conn = conn
 	if err != nil {
@@ -67,7 +68,7 @@ func (c *Client) Start() {
 		}
 	}()
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 	conn.Close()
 
 	for {

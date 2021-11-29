@@ -12,4 +12,6 @@ type IServer interface {
 	SetOnConnStop(func(connection IConnection))
 	CallOnConnStart(connection IConnection)
 	CallOnConnStop(connection IConnection)
+
+	GetServerType() string
 }

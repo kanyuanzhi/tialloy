@@ -41,7 +41,7 @@ func DoConnStopHook(connection tiface.IConnection) {
 }
 
 func TestServer(t *testing.T) {
-	server := tinet.NewServer()
+	server := tinet.NewTcpServer()
 	server.AddRouter(1, &CustomRouter{})
 	server.AddRouter(2, &EchoRouter{})
 	server.SetOnConnStart(DoConnStartHook)

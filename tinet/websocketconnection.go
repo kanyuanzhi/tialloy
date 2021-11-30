@@ -44,7 +44,7 @@ func (wc *WebsocketConnection) StartReader() {
 			return
 		}
 
-		if msgID, ok := msgJon["msgID"]; ok {
+		if msgID, ok := msgJon["msg_id"]; ok {
 			message := NewMessage(uint32(msgID.(float64)), data)
 			request := NewRequest(wc, message)
 
@@ -54,7 +54,7 @@ func (wc *WebsocketConnection) StartReader() {
 				go wc.MsgHandler.DoMsgHandler(request)
 			}
 		} else {
-			utils.GlobalLog.Warn("no msgID")
+			utils.GlobalLog.Warn("no msg_id")
 		}
 	}
 }

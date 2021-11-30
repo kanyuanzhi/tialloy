@@ -31,7 +31,7 @@ func (c *Client) Start() {
 		return
 	}
 	status := &Status{
-		Mac:    "12.12.31.41.we",
+		Mac:    "aa",
 		Number: 12,
 	}
 	data, _ := json.Marshal(status)

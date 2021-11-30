@@ -8,7 +8,7 @@ import (
 )
 
 type EchoRouter struct {
-	tinet.BaseRouter
+	*tinet.BaseRouter
 }
 
 func (ec *EchoRouter) Handle(request tiface.IRequest) {
@@ -20,7 +20,7 @@ func (ec *EchoRouter) Handle(request tiface.IRequest) {
 }
 
 type CustomRouter struct {
-	tinet.BaseRouter
+	*tinet.BaseRouter
 }
 
 func (cr *CustomRouter) Handle(request tiface.IRequest) {

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"encoding/json"
 	"github.com/kanyuanzhi/tialloy/tinet"
 	"io"
 	"log"
@@ -15,6 +16,11 @@ type Client struct {
 	Conn net.Conn
 }
 
+type Status struct {
+	Mac    string `json:"mac,omitempty"`
+	Number uint32 `json:"number,omitempty"`
+}
+
 func (c *Client) Start() {
 	log.Println("Client start")
 
@@ -24,7 +30,12 @@ func (c *Client) Start() {
 		log.Println(err.Error())
 		return
 	}
-	message := tinet.NewMessage(c.MsgID, []byte("hello111111"))
+	status := &Status{
+		Mac:    "12.12.31.41.we",
+		Number: 12,
+	}
+	data, _ := json.Marshal(status)
+	message := tinet.NewMessage(c.MsgID, data)
 	dp := tinet.NewDataPack()
 	go func() {
 		for {
@@ -68,8 +79,8 @@ func (c *Client) Start() {
 		}
 	}()
 
-	time.Sleep(10 * time.Second)
-	conn.Close()
+	//time.Sleep(10 * time.Second)
+	//conn.Close()
 
 	for {
 		time.Sleep(100 * time.Second)

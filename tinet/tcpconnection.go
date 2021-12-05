@@ -1,6 +1,7 @@
 package tinet
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/kanyuanzhi/tialloy/tiface"
@@ -28,38 +29,41 @@ func (tc *TcpConnection) StartReader() {
 	defer tc.Stop()
 
 	for {
-		dp := NewDataPack()
-
-		dataHeadBuf := make([]byte, dp.GetHeadLen())
-		if _, err := io.ReadFull(tc.GetTcpConn(), dataHeadBuf); err != nil {
-			utils.GlobalLog.Error(err)
-			tc.ExitBuffChan <- true
+		select {
+		case <-tc.ctx.Done():
 			return
-		}
+		default:
+			dp := NewDataPack()
 
-		message, err := dp.Unpack(dataHeadBuf)
-		if err != nil {
-			utils.GlobalLog.Error(err)
-			tc.ExitBuffChan <- true
-			return
-		}
-
-		var dataBuf []byte
-		if message.GetDataLen() > 0 {
-			dataBuf = make([]byte, message.GetDataLen())
-			if _, err := io.ReadFull(tc.GetTcpConn(), dataBuf); err != nil {
+			dataHeadBuf := make([]byte, dp.GetHeadLen())
+			if _, err := io.ReadFull(tc.GetTcpConn(), dataHeadBuf); err != nil {
 				utils.GlobalLog.Error(err)
-				continue
+				return
 			}
-		}
 
-		message.SetData(dataBuf)
-		request := NewRequest(tc, message)
+			message, err := dp.Unpack(dataHeadBuf)
+			if err != nil {
+				utils.GlobalLog.Error(err)
+				return
+			}
 
-		if utils.GlobalObject.TcpWorkerPoolSize > 0 {
-			go tc.MsgHandler.SendMsgToTaskQueue(request)
-		} else {
-			go tc.MsgHandler.DoMsgHandler(request)
+			var dataBuf []byte
+			if message.GetDataLen() > 0 {
+				dataBuf = make([]byte, message.GetDataLen())
+				if _, err := io.ReadFull(tc.GetTcpConn(), dataBuf); err != nil {
+					utils.GlobalLog.Error(err)
+					return
+				}
+			}
+
+			message.SetData(dataBuf)
+			request := NewRequest(tc, message)
+
+			if utils.GlobalObject.TcpWorkerPoolSize > 0 {
+				go tc.MsgHandler.SendMsgToTaskQueue(request)
+			} else {
+				go tc.MsgHandler.DoMsgHandler(request)
+			}
 		}
 	}
 }
@@ -85,24 +89,19 @@ func (tc *TcpConnection) StartWriter() {
 				utils.GlobalLog.Error("msgBuffChan has been closed")
 				break
 			}
-		case <-tc.ExitBuffChan:
+		case <-tc.ctx.Done():
 			return
 		}
 	}
 }
 
 func (tc *TcpConnection) Start() {
+	tc.ctx, tc.cancel = context.WithCancel(context.Background())
+
 	go tc.StartReader()
 	go tc.StartWriter()
 
 	tc.server.CallOnConnStart(tc) // 链接启动的回调业务
-
-	for {
-		select {
-		case <-tc.ExitBuffChan: // 得到退出消息，不再阻塞
-			return
-		}
-	}
 }
 
 func (tc *TcpConnection) GetTcpConn() *net.TCPConn {
@@ -110,6 +109,8 @@ func (tc *TcpConnection) GetTcpConn() *net.TCPConn {
 }
 
 func (tc *TcpConnection) SendMsg(msgID uint32, data []byte) error {
+	tc.RLock()
+	defer tc.RUnlock()
 	if tc.IsClosed == true {
 		return errors.New("tcp connection has been closed")
 	}
@@ -125,6 +126,8 @@ func (tc *TcpConnection) SendMsg(msgID uint32, data []byte) error {
 }
 
 func (tc *TcpConnection) SendBuffMsg(msgID uint32, data []byte) error {
+	tc.RLock()
+	defer tc.RUnlock()
 	if tc.IsClosed == true {
 		return errors.New("tcp connection has been closed")
 	}

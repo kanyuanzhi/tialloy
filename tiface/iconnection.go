@@ -1,6 +1,7 @@
 package tiface
 
 import (
+	"context"
 	"net"
 )
 
@@ -21,4 +22,6 @@ type IConnection interface {
 	RemoveProperty(key string)
 
 	GetServer() IServer
+
+	Context() context.Context // 用于用户自定义的go程获取连接退出的状态
 }

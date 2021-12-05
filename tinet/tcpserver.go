@@ -63,7 +63,5 @@ func (ts *TcpServer) Start() {
 func (ts *TcpServer) Serve() {
 	ts.Start()
 	//TODO 服务器启动后的一些操作
-	for {
-		time.Sleep(10 * time.Second)
-	}
+	select {}
 }

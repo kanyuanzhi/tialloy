@@ -1,6 +1,7 @@
 package tinet
 
 import (
+	"context"
 	"errors"
 	"github.com/gorilla/websocket"
 	"github.com/kanyuanzhi/tialloy/tiface"
@@ -18,26 +19,27 @@ type BaseConnection struct {
 	IsClosed   bool
 	MsgHandler tiface.IMsgHandler
 
-	ExitBuffChan chan bool
+	ctx    context.Context
+	cancel context.CancelFunc
 
 	msgChan     chan []byte
 	msgBuffChan chan []byte // 带缓冲的数据通道
 
+	sync.RWMutex
+
 	property     map[string]interface{}
-	propertyLock *sync.RWMutex
+	propertyLock sync.Mutex
 }
 
 func NewBaseConnection(server tiface.IServer, conn interface{}, connID uint32, msgHandler tiface.IMsgHandler) *BaseConnection {
 	baseConnection := &BaseConnection{
-		server:       server,
-		Conn:         conn,
-		ConnID:       connID,
-		IsClosed:     false,
-		MsgHandler:   msgHandler,
-		ExitBuffChan: make(chan bool, 1),
-		msgChan:      make(chan []byte),
-		property:     make(map[string]interface{}),
-		propertyLock: new(sync.RWMutex),
+		server:     server,
+		Conn:       conn,
+		ConnID:     connID,
+		IsClosed:   false,
+		MsgHandler: msgHandler,
+		msgChan:    make(chan []byte),
+		property:   make(map[string]interface{}),
 	}
 	switch server.GetServerType() {
 	case "tcp":
@@ -54,12 +56,12 @@ func (bc *BaseConnection) Start() {
 
 func (bc *BaseConnection) Stop() {
 	utils.GlobalLog.Warnf("%s connection connID=%d stopped", bc.server.GetServerType(), bc.ConnID)
+
+	bc.server.CallOnConnStop(bc) //链接关闭的回调业务
+
 	if bc.IsClosed == true {
 		return
 	}
-	bc.IsClosed = true
-
-	bc.server.CallOnConnStop(bc) //链接关闭的回调业务
 
 	switch bc.server.GetServerType() {
 	case "tcp":
@@ -68,11 +70,14 @@ func (bc *BaseConnection) Stop() {
 		bc.Conn.(*websocket.Conn).Close()
 	}
 
-	bc.ExitBuffChan <- true
-	close(bc.ExitBuffChan)
+	bc.cancel()
 
 	bc.server.GetConnManager().Remove(bc)
+
 	close(bc.msgChan)
+	close(bc.msgBuffChan)
+
+	bc.IsClosed = true
 }
 
 func (bc *BaseConnection) GetConn() interface{} {
@@ -110,8 +115,8 @@ func (bc *BaseConnection) SetProperty(key string, value interface{}) {
 }
 
 func (bc *BaseConnection) GetProperty(key string) (interface{}, error) {
-	bc.propertyLock.RLock()
-	defer bc.propertyLock.RUnlock()
+	bc.propertyLock.Lock()
+	defer bc.propertyLock.Unlock()
 
 	if value, ok := bc.property[key]; ok {
 		return value, nil
@@ -129,4 +134,8 @@ func (bc *BaseConnection) RemoveProperty(key string) {
 
 func (bc *BaseConnection) GetServer() tiface.IServer {
 	return bc.server
+}
+
+func (bc *BaseConnection) Context() context.Context {
+	return bc.ctx
 }

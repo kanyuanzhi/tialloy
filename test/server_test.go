@@ -3,8 +3,10 @@ package test
 import (
 	"github.com/kanyuanzhi/tialloy/tiface"
 	"github.com/kanyuanzhi/tialloy/tinet"
+	"github.com/kanyuanzhi/tialloy/utils"
 	"log"
 	"testing"
+	"time"
 )
 
 type EchoRouter struct {
@@ -34,6 +36,15 @@ func (cr *CustomRouter) Handle(request tiface.IRequest) {
 func DoConnStartHook(connection tiface.IConnection) {
 	log.Println("onConnStartHook!!!!!!!!!!!!!!!!!!!!")
 	connection.SendBuffMsg(1000, []byte("DoConnStartHook"))
+	for {
+		time.Sleep(time.Second)
+		select {
+		case <-connection.Context().Done():
+			return
+		default:
+			utils.GlobalLog.Trace("sdasdad")
+		}
+	}
 }
 
 func DoConnStopHook(connection tiface.IConnection) {

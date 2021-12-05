@@ -1,6 +1,7 @@
 package tinet
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/websocket"
@@ -29,32 +30,33 @@ func (wc *WebsocketConnection) StartReader() {
 	defer wc.Stop()
 
 	for {
-		msgType, data, err := wc.GetWebsocketConn().ReadMessage()
-		if err != nil {
-			utils.GlobalLog.Error(err)
-			wc.ExitBuffChan <- true
+		select {
+		case <-wc.ctx.Done():
 			return
-		}
-		wc.MessageType = msgType
-
-		var msgJon map[string]interface{}
-		if err := json.Unmarshal(data, &msgJon); err != nil {
-			utils.GlobalLog.Error(err)
-			wc.ExitBuffChan <- true
-			return
-		}
-
-		if msgID, ok := msgJon["msg_id"]; ok {
-			message := NewMessage(uint32(msgID.(float64)), data)
-			request := NewRequest(wc, message)
-
-			if utils.GlobalObject.WebsocketWorkerPoolSize > 0 {
-				go wc.MsgHandler.SendMsgToTaskQueue(request)
-			} else {
-				go wc.MsgHandler.DoMsgHandler(request)
+		default:
+			msgType, data, err := wc.GetWebsocketConn().ReadMessage()
+			if err != nil {
+				utils.GlobalLog.Error(err)
+				return
 			}
-		} else {
-			utils.GlobalLog.Warn("no msg_id")
+			wc.MessageType = msgType
+
+			var msgJon map[string]interface{}
+			if err := json.Unmarshal(data, &msgJon); err != nil {
+				utils.GlobalLog.Error(err)
+				return
+			}
+			if msgID, ok := msgJon["msg_id"]; ok {
+				message := NewMessage(uint32(msgID.(float64)), data)
+				request := NewRequest(wc, message)
+				if utils.GlobalObject.WebsocketWorkerPoolSize > 0 {
+					go wc.MsgHandler.SendMsgToTaskQueue(request)
+				} else {
+					go wc.MsgHandler.DoMsgHandler(request)
+				}
+			} else {
+				utils.GlobalLog.Warn("no msg_id")
+			}
 		}
 	}
 }
@@ -80,24 +82,19 @@ func (wc *WebsocketConnection) StartWriter() {
 				utils.GlobalLog.Error("msgBuffChan has been closed")
 				break
 			}
-		case <-wc.ExitBuffChan:
+		case <-wc.ctx.Done():
 			return
 		}
 	}
 }
 
 func (wc *WebsocketConnection) Start() {
+	wc.ctx, wc.cancel = context.WithCancel(context.Background())
+
 	go wc.StartReader()
 	go wc.StartWriter()
 
 	wc.server.CallOnConnStart(wc)
-
-	for {
-		select {
-		case <-wc.ExitBuffChan: // 得到退出消息，不再阻塞
-			return
-		}
-	}
 }
 
 func (wc *WebsocketConnection) GetWebsocketConn() *websocket.Conn {
@@ -105,6 +102,8 @@ func (wc *WebsocketConnection) GetWebsocketConn() *websocket.Conn {
 }
 
 func (wc *WebsocketConnection) SendMsg(msgID uint32, data []byte) error {
+	wc.RLock()
+	defer wc.RUnlock()
 	if wc.IsClosed == true {
 		return errors.New("websocket connection has been closed")
 	}
@@ -113,6 +112,8 @@ func (wc *WebsocketConnection) SendMsg(msgID uint32, data []byte) error {
 }
 
 func (wc *WebsocketConnection) SendBuffMsg(msgID uint32, data []byte) error {
+	wc.RLock()
+	defer wc.RUnlock()
 	if wc.IsClosed == true {
 		return errors.New("websocket connection has been closed")
 	}

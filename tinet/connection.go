@@ -55,6 +55,9 @@ func (bc *BaseConnection) Start() {
 }
 
 func (bc *BaseConnection) Stop() {
+	bc.Lock()
+	defer bc.Unlock()
+
 	utils.GlobalLog.Warnf("%s connection connID=%d stopped", bc.server.GetServerType(), bc.ConnID)
 
 	bc.server.CallOnConnStop(bc) //链接关闭的回调业务

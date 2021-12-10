@@ -1,9 +1,9 @@
 package test
 
 import (
+	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
 	"github.com/kanyuanzhi/tialloy/tinet"
-	"github.com/kanyuanzhi/tialloy/utils"
 	"log"
 	"testing"
 	"time"
@@ -42,7 +42,7 @@ func DoConnStartHook(connection tiface.IConnection) {
 		case <-connection.Context().Done():
 			return
 		default:
-			utils.GlobalLog.Trace("sdasdad")
+			global.Log.Trace("sdasdad")
 		}
 	}
 }

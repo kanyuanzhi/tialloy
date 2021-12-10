@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/gorilla/websocket"
+	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
-	"github.com/kanyuanzhi/tialloy/utils"
 	"net"
 	"sync"
 )
@@ -43,9 +43,9 @@ func NewBaseConnection(server tiface.IServer, conn interface{}, connID uint32, m
 	}
 	switch server.GetServerType() {
 	case "tcp":
-		baseConnection.msgBuffChan = make(chan []byte, utils.GlobalObject.TcpMaxMsgChanLen)
+		baseConnection.msgBuffChan = make(chan []byte, global.Object.TcpMaxMsgChanLen)
 	case "websocket":
-		baseConnection.msgBuffChan = make(chan []byte, utils.GlobalObject.WebsocketMaxMsgChanLen)
+		baseConnection.msgBuffChan = make(chan []byte, global.Object.WebsocketMaxMsgChanLen)
 	}
 	return baseConnection
 }
@@ -58,7 +58,7 @@ func (bc *BaseConnection) Stop() {
 	bc.Lock()
 	defer bc.Unlock()
 
-	utils.GlobalLog.Warnf("%s connection connID=%d stopped", bc.server.GetServerType(), bc.ConnID)
+	global.Log.Warnf("%s connection connID=%d stopped", bc.server.GetServerType(), bc.ConnID)
 
 	bc.server.CallOnConnStop(bc) //链接关闭的回调业务
 

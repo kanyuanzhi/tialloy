@@ -1,8 +1,8 @@
 package tinet
 
 import (
+	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
-	"github.com/kanyuanzhi/tialloy/utils"
 )
 
 type BaseServer struct {
@@ -21,33 +21,33 @@ type BaseServer struct {
 
 func NewBaseServer(serverType string) *BaseServer {
 	baseServer := &BaseServer{
-		Name:       utils.GlobalObject.Name,
+		Name:       global.Object.Name,
 		ServerType: serverType,
 		IPVersion:  "tcp4",
-		IP:         utils.GlobalObject.Host,
+		IP:         global.Object.Host,
 
 		msgHandler:  NewMsgHandler(serverType),
 		connManager: NewConnManager(),
 	}
 	switch serverType {
 	case "tcp":
-		baseServer.Port = utils.GlobalObject.TcpPort
+		baseServer.Port = global.Object.TcpPort
 	case "websocket":
-		baseServer.Port = utils.GlobalObject.WebsocketPort
+		baseServer.Port = global.Object.WebsocketPort
 	}
 	return baseServer
 }
 
 func (bs *BaseServer) Start() {
-	utils.GlobalLog.Panic("implement me")
+	global.Log.Panic("implement me")
 }
 
 func (bs *BaseServer) Serve() {
-	utils.GlobalLog.Panic("implement me")
+	global.Log.Panic("implement me")
 }
 
 func (bs *BaseServer) Stop() {
-	utils.GlobalLog.Warnf("%s server listenner at %s:%d stopped\n", bs.Name, bs.IP, bs.Port)
+	global.Log.Warnf("%s server listenner at %s:%d stopped\n", bs.Name, bs.IP, bs.Port)
 	bs.connManager.ClearAllConn()
 }
 
@@ -69,14 +69,14 @@ func (bs *BaseServer) SetOnConnStop(hookFunc func(connection tiface.IConnection)
 
 func (bs *BaseServer) CallOnConnStart(connection tiface.IConnection) {
 	if bs.OnConnStart != nil {
-		utils.GlobalLog.Tracef("call DoConnStartHook")
+		global.Log.Tracef("call DoConnStartHook")
 		bs.OnConnStart(connection)
 	}
 }
 
 func (bs *BaseServer) CallOnConnStop(connection tiface.IConnection) {
 	if bs.OnConnStop != nil {
-		utils.GlobalLog.Tracef("call DoOnConnStopHook")
+		global.Log.Tracef("call DoOnConnStopHook")
 		bs.OnConnStop(connection)
 	}
 }

@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
-	"github.com/kanyuanzhi/tialloy/utils"
 	"io"
 	"net"
 )
@@ -24,8 +24,8 @@ func NewTcpConnection(server tiface.IServer, conn *net.TCPConn, connID uint32, m
 }
 
 func (tc *TcpConnection) StartReader() {
-	utils.GlobalLog.Infof("tcp reader goroutine for %s is running", tc.RemoteAddr())
-	defer utils.GlobalLog.Warnf("tcp reader goroutine for %s exited", tc.RemoteAddr())
+	global.Log.Infof("tcp reader goroutine for %s is running", tc.RemoteAddr())
+	defer global.Log.Warnf("tcp reader goroutine for %s exited", tc.RemoteAddr())
 	defer tc.Stop()
 
 	for {
@@ -37,13 +37,13 @@ func (tc *TcpConnection) StartReader() {
 
 			dataHeadBuf := make([]byte, dp.GetHeadLen())
 			if _, err := io.ReadFull(tc.GetTcpConn(), dataHeadBuf); err != nil {
-				utils.GlobalLog.Error(err)
+				global.Log.Error(err)
 				return
 			}
 
 			message, err := dp.Unpack(dataHeadBuf)
 			if err != nil {
-				utils.GlobalLog.Error(err)
+				global.Log.Error(err)
 				return
 			}
 
@@ -51,7 +51,7 @@ func (tc *TcpConnection) StartReader() {
 			if message.GetDataLen() > 0 {
 				dataBuf = make([]byte, message.GetDataLen())
 				if _, err := io.ReadFull(tc.GetTcpConn(), dataBuf); err != nil {
-					utils.GlobalLog.Error(err)
+					global.Log.Error(err)
 					return
 				}
 			}
@@ -59,7 +59,7 @@ func (tc *TcpConnection) StartReader() {
 			message.SetData(dataBuf)
 			request := NewRequest(tc, message)
 
-			if utils.GlobalObject.TcpWorkerPoolSize > 0 {
+			if global.Object.TcpWorkerPoolSize > 0 {
 				go tc.MsgHandler.SendMsgToTaskQueue(request)
 			} else {
 				go tc.MsgHandler.DoMsgHandler(request)
@@ -69,24 +69,24 @@ func (tc *TcpConnection) StartReader() {
 }
 
 func (tc *TcpConnection) StartWriter() {
-	utils.GlobalLog.Infof("tcp writer goroutine for %s is running", tc.RemoteAddr())
-	defer utils.GlobalLog.Warnf("tcp writer goroutine for %s exited", tc.RemoteAddr())
+	global.Log.Infof("tcp writer goroutine for %s is running", tc.RemoteAddr())
+	defer global.Log.Warnf("tcp writer goroutine for %s exited", tc.RemoteAddr())
 	for {
 		select {
 		case data := <-tc.msgChan:
 			if _, err := tc.GetTcpConn().Write(data); err != nil {
-				utils.GlobalLog.Error(err)
+				global.Log.Error(err)
 				return
 			}
 		case data, ok := <-tc.msgBuffChan:
 			if ok {
 				if _, err := tc.GetTcpConn().Write(data); err != nil {
-					utils.GlobalLog.Error(err)
+					global.Log.Error(err)
 					return
 				}
 			} else {
 				// 通道关闭
-				utils.GlobalLog.Error("msgBuffChan has been closed")
+				global.Log.Error("msgBuffChan has been closed")
 				break
 			}
 		case <-tc.ctx.Done():

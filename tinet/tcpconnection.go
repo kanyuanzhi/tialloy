@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tilog"
 	"io"
 	"net"
 )
@@ -24,8 +25,8 @@ func NewTcpConnection(server tiface.IServer, conn *net.TCPConn, connID uint32, m
 }
 
 func (tc *TcpConnection) StartReader() {
-	global.Log.Infof("tcp reader goroutine for %s is running", tc.RemoteAddr())
-	defer global.Log.Warnf("tcp reader goroutine for %s exited", tc.RemoteAddr())
+	tilog.Log.Infof("tcp reader goroutine for %s is running", tc.RemoteAddr())
+	defer tilog.Log.Warnf("tcp reader goroutine for %s exited", tc.RemoteAddr())
 	defer tc.Stop()
 
 	for {
@@ -37,13 +38,13 @@ func (tc *TcpConnection) StartReader() {
 
 			dataHeadBuf := make([]byte, dp.GetHeadLen())
 			if _, err := io.ReadFull(tc.GetTcpConn(), dataHeadBuf); err != nil {
-				global.Log.Error(err)
+				tilog.Log.Error(err)
 				return
 			}
 
 			message, err := dp.Unpack(dataHeadBuf)
 			if err != nil {
-				global.Log.Error(err)
+				tilog.Log.Error(err)
 				return
 			}
 
@@ -51,7 +52,7 @@ func (tc *TcpConnection) StartReader() {
 			if message.GetDataLen() > 0 {
 				dataBuf = make([]byte, message.GetDataLen())
 				if _, err := io.ReadFull(tc.GetTcpConn(), dataBuf); err != nil {
-					global.Log.Error(err)
+					tilog.Log.Error(err)
 					return
 				}
 			}
@@ -69,24 +70,24 @@ func (tc *TcpConnection) StartReader() {
 }
 
 func (tc *TcpConnection) StartWriter() {
-	global.Log.Infof("tcp writer goroutine for %s is running", tc.RemoteAddr())
-	defer global.Log.Warnf("tcp writer goroutine for %s exited", tc.RemoteAddr())
+	tilog.Log.Infof("tcp writer goroutine for %s is running", tc.RemoteAddr())
+	defer tilog.Log.Warnf("tcp writer goroutine for %s exited", tc.RemoteAddr())
 	for {
 		select {
 		case data := <-tc.msgChan:
 			if _, err := tc.GetTcpConn().Write(data); err != nil {
-				global.Log.Error(err)
+				tilog.Log.Error(err)
 				return
 			}
 		case data, ok := <-tc.msgBuffChan:
 			if ok {
 				if _, err := tc.GetTcpConn().Write(data); err != nil {
-					global.Log.Error(err)
+					tilog.Log.Error(err)
 					return
 				}
 			} else {
 				// 通道关闭
-				global.Log.Error("msgBuffChan has been closed")
+				tilog.Log.Error("msgBuffChan has been closed")
 				break
 			}
 		case <-tc.ctx.Done():

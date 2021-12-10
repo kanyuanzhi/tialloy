@@ -3,6 +3,7 @@ package tinet
 import (
 	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tilog"
 )
 
 type BaseServer struct {
@@ -39,15 +40,15 @@ func NewBaseServer(serverType string) *BaseServer {
 }
 
 func (bs *BaseServer) Start() {
-	global.Log.Panic("implement me")
+	tilog.Log.Panic("implement me")
 }
 
 func (bs *BaseServer) Serve() {
-	global.Log.Panic("implement me")
+	tilog.Log.Panic("implement me")
 }
 
 func (bs *BaseServer) Stop() {
-	global.Log.Warnf("%s server listenner at %s:%d stopped\n", bs.Name, bs.IP, bs.Port)
+	tilog.Log.Warnf("%s server listenner at %s:%d stopped\n", bs.Name, bs.IP, bs.Port)
 	bs.connManager.ClearAllConn()
 }
 
@@ -69,14 +70,14 @@ func (bs *BaseServer) SetOnConnStop(hookFunc func(connection tiface.IConnection)
 
 func (bs *BaseServer) CallOnConnStart(connection tiface.IConnection) {
 	if bs.OnConnStart != nil {
-		global.Log.Tracef("call DoConnStartHook")
+		tilog.Log.Tracef("call DoConnStartHook")
 		bs.OnConnStart(connection)
 	}
 }
 
 func (bs *BaseServer) CallOnConnStop(connection tiface.IConnection) {
 	if bs.OnConnStop != nil {
-		global.Log.Tracef("call DoOnConnStopHook")
+		tilog.Log.Tracef("call DoOnConnStopHook")
 		bs.OnConnStop(connection)
 	}
 }

@@ -3,8 +3,8 @@ package tinet
 import (
 	"errors"
 	"fmt"
-	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tilog"
 	"sync"
 )
 
@@ -28,7 +28,7 @@ func (cm *ConnManager) Add(conn tiface.IConnection) error {
 		return errors.New(fmt.Sprintf("%s connID=%d repeated", conn.GetServer().GetServerType(), conn.GetConnID()))
 	}
 	cm.connections[conn.GetConnID()] = conn
-	global.Log.Infof("add %s connID=%d to connManager, current conn num=%d", conn.GetServer().GetServerType(), conn.GetConnID(), cm.Len())
+	tilog.Log.Infof("add %s connID=%d to connManager, current conn num=%d", conn.GetServer().GetServerType(), conn.GetConnID(), cm.Len())
 	return nil
 }
 
@@ -37,7 +37,7 @@ func (cm *ConnManager) Remove(conn tiface.IConnection) {
 	defer cm.connLock.Unlock()
 
 	delete(cm.connections, conn.GetConnID())
-	global.Log.Warnf("remove %s connID=%d from connManager, current conn num=%d", conn.GetServer().GetServerType(), conn.GetConnID(), cm.Len())
+	tilog.Log.Warnf("remove %s connID=%d from connManager, current conn num=%d", conn.GetServer().GetServerType(), conn.GetConnID(), cm.Len())
 }
 
 func (cm *ConnManager) Get(connID uint32) (tiface.IConnection, error) {
@@ -64,5 +64,5 @@ func (cm *ConnManager) ClearAllConn() {
 		// TODO:此处应通知客户端服务器关闭连接？
 		delete(cm.connections, connID)
 	}
-	global.Log.Tracef("clear all connections from connManager, current conn num=%d", cm.Len())
+	tilog.Log.Tracef("clear all connections from connManager, current conn num=%d", cm.Len())
 }

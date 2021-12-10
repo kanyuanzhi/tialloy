@@ -1,4 +1,4 @@
-package global
+package tilog
 
 import (
 	"bytes"
@@ -18,9 +18,9 @@ const (
 
 var Log *logrus.Logger
 
-type customFormatter struct{}
+type CustomFormatter struct{}
 
-func (cf *customFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (cf *CustomFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	var b *bytes.Buffer
 	if entry.Buffer != nil {
 		b = entry.Buffer

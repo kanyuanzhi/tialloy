@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tilog"
 	"math/rand"
 	"net"
 	"time"
@@ -21,26 +22,26 @@ func NewTcpServer() tiface.IServer {
 }
 
 func (ts *TcpServer) Start() {
-	global.Log.Infof("%s tcp server listenner on %s:%d is starting...", ts.Name, ts.IP, ts.Port)
+	tilog.Log.Infof("%s tcp server listenner on %s:%d is starting...", ts.Name, ts.IP, ts.Port)
 	go func() {
 		ts.msgHandler.StartWorkerPool()
 
 		addr, err := net.ResolveTCPAddr(ts.IPVersion, fmt.Sprintf("%s:%d", ts.IP, ts.Port))
 		if err != nil {
-			global.Log.Error(err)
+			tilog.Log.Error(err)
 			return
 		}
 		listener, err := net.ListenTCP(ts.IPVersion, addr)
 		if err != nil {
-			global.Log.Error(err)
+			tilog.Log.Error(err)
 			return
 		}
-		global.Log.Infof("tcp server is listening on %s:%d", ts.IP, ts.Port)
+		tilog.Log.Infof("tcp server is listening on %s:%d", ts.IP, ts.Port)
 
 		for {
 			conn, err := listener.AcceptTCP() // 阻塞等待客户端建立连接请求
 			if err != nil {
-				global.Log.Error(err)
+				tilog.Log.Error(err)
 				return
 			}
 

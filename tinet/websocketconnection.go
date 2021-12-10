@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tilog"
 )
 
 type WebsocketConnection struct {
@@ -25,8 +26,8 @@ func NewWebsocketConnection(server tiface.IServer, conn *websocket.Conn, connID 
 }
 
 func (wc *WebsocketConnection) StartReader() {
-	global.Log.Infof("websocket reader goroutine for %s is running", wc.RemoteAddr())
-	defer global.Log.Warnf("websocket reader goroutine for %s exited", wc.RemoteAddr())
+	tilog.Log.Infof("websocket reader goroutine for %s is running", wc.RemoteAddr())
+	defer tilog.Log.Warnf("websocket reader goroutine for %s exited", wc.RemoteAddr())
 	defer wc.Stop()
 
 	for {
@@ -36,14 +37,14 @@ func (wc *WebsocketConnection) StartReader() {
 		default:
 			msgType, data, err := wc.GetWebsocketConn().ReadMessage()
 			if err != nil {
-				global.Log.Error(err)
+				tilog.Log.Error(err)
 				return
 			}
 			wc.MessageType = msgType
 
 			var msgJon map[string]interface{}
 			if err := json.Unmarshal(data, &msgJon); err != nil {
-				global.Log.Error(err)
+				tilog.Log.Error(err)
 				return
 			}
 			if msgID, ok := msgJon["msg_id"]; ok {
@@ -55,31 +56,31 @@ func (wc *WebsocketConnection) StartReader() {
 					go wc.MsgHandler.DoMsgHandler(request)
 				}
 			} else {
-				global.Log.Warn("no msg_id")
+				tilog.Log.Warn("no msg_id")
 			}
 		}
 	}
 }
 
 func (wc *WebsocketConnection) StartWriter() {
-	global.Log.Infof("websocket writer goroutine for %s is running", wc.RemoteAddr())
-	defer global.Log.Warnf("websocket writer goroutine for %s exited", wc.RemoteAddr())
+	tilog.Log.Infof("websocket writer goroutine for %s is running", wc.RemoteAddr())
+	defer tilog.Log.Warnf("websocket writer goroutine for %s exited", wc.RemoteAddr())
 	for {
 		select {
 		case data := <-wc.msgChan:
 			if err := wc.GetWebsocketConn().WriteMessage(wc.MessageType, data); err != nil {
-				global.Log.Error(err)
+				tilog.Log.Error(err)
 				return
 			}
 		case data, ok := <-wc.msgBuffChan:
 			if ok {
 				if err := wc.GetWebsocketConn().WriteMessage(wc.MessageType, data); err != nil {
-					global.Log.Error(err)
+					tilog.Log.Error(err)
 					return
 				}
 			} else {
 				// 通道关闭
-				global.Log.Error("msgBuffChan has been closed")
+				tilog.Log.Error("msgBuffChan has been closed")
 				break
 			}
 		case <-wc.ctx.Done():

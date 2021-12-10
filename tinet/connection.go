@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tilog"
 	"net"
 	"sync"
 )
@@ -58,7 +59,7 @@ func (bc *BaseConnection) Stop() {
 	bc.Lock()
 	defer bc.Unlock()
 
-	global.Log.Warnf("%s connection connID=%d stopped", bc.server.GetServerType(), bc.ConnID)
+	tilog.Log.Warnf("%s connection connID=%d stopped", bc.server.GetServerType(), bc.ConnID)
 
 	bc.server.CallOnConnStop(bc) //链接关闭的回调业务
 

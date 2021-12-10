@@ -3,6 +3,7 @@ package global
 import (
 	"encoding/json"
 	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tilog"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 )
@@ -46,15 +47,14 @@ func (g *Obj) Reload() {
 	if err != nil {
 		panic(err.Error())
 	}
-
-	Log = logrus.New()
-	Log.SetReportCaller(Object.LogMode)
+	tilog.Log = logrus.New()
+	tilog.Log.SetReportCaller(Object.LogMode)
 	if Object.LogMode == true {
-		Log.SetLevel(logrus.TraceLevel)
+		tilog.Log.SetLevel(logrus.TraceLevel)
 	} else {
-		Log.SetLevel(logrus.InfoLevel)
+		tilog.Log.SetLevel(logrus.InfoLevel)
 	}
-	Log.SetFormatter(&customFormatter{})
+	tilog.Log.SetFormatter(&tilog.CustomFormatter{})
 }
 
 func init() {

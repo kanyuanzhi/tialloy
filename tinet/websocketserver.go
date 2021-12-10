@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tilog"
 	"math/rand"
 	"net/http"
 	"time"
@@ -38,13 +39,13 @@ var upgrader = websocket.Upgrader{
 func (ws *WebsocketServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		global.Log.Error(err)
+		tilog.Log.Error(err)
 		return
 	}
 
 	if ws.connManager.Len() >= global.Object.TcpMaxConn {
 		// TODO:此处应通知客户端服务器拒绝服务?
-		global.Log.Warnf("connection num reaches max %d", global.Object.TcpMaxConn)
+		tilog.Log.Warnf("connection num reaches max %d", global.Object.TcpMaxConn)
 		conn.Close() // 超过服务器设置的最大TCP连接数，拒绝服务
 		return
 	}
@@ -59,12 +60,12 @@ func (ws *WebsocketServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws *WebsocketServer) Start() {
-	global.Log.Infof("%s websocket server listenner on %s:%d is starting...", ws.Name, ws.IP, ws.Port)
+	tilog.Log.Infof("%s websocket server listenner on %s:%d is starting...", ws.Name, ws.IP, ws.Port)
 	ws.msgHandler.StartWorkerPool()
 	http.HandleFunc("/"+ws.Path, ws.wsHandler)
 	err := http.ListenAndServe(fmt.Sprintf("%s:%d", ws.IP, ws.Port), nil)
 	if err != nil {
-		global.Log.Error(err)
+		tilog.Log.Error(err)
 	}
 }
 

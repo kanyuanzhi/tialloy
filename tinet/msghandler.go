@@ -3,6 +3,7 @@ package tinet
 import (
 	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
+	"github.com/kanyuanzhi/tialloy/tilog"
 )
 
 type MsgHandler struct {
@@ -34,7 +35,7 @@ func (mh *MsgHandler) DoMsgHandler(request tiface.IRequest) {
 	msgID := request.GetMsgID()
 	handler, ok := mh.Apis[msgID]
 	if !ok {
-		global.Log.Warnf("%s api msgID=%d is not found", mh.ServerType, msgID)
+		tilog.Log.Warnf("%s api msgID=%d is not found", mh.ServerType, msgID)
 		return
 	}
 	handler.PreHandle(request)
@@ -44,15 +45,15 @@ func (mh *MsgHandler) DoMsgHandler(request tiface.IRequest) {
 
 func (mh *MsgHandler) AddRouter(msgID uint32, router tiface.IRouter) {
 	if _, ok := mh.Apis[msgID]; ok {
-		global.Log.Warnf("%s api msgID=%d repeated", mh.ServerType, msgID)
+		tilog.Log.Warnf("%s api msgID=%d repeated", mh.ServerType, msgID)
 		return
 	}
 	mh.Apis[msgID] = router
-	global.Log.Tracef("%s api msgID=%d added", mh.ServerType, msgID)
+	tilog.Log.Tracef("%s api msgID=%d added", mh.ServerType, msgID)
 }
 
 func (mh *MsgHandler) StartOneWorkerPool(workerID int, taskQueue chan tiface.IRequest) {
-	global.Log.Tracef("%s worker id=%d started", mh.ServerType, workerID)
+	tilog.Log.Tracef("%s worker id=%d started", mh.ServerType, workerID)
 	for {
 		select {
 		case request := <-taskQueue:
@@ -70,6 +71,6 @@ func (mh *MsgHandler) StartWorkerPool() {
 
 func (mh *MsgHandler) SendMsgToTaskQueue(request tiface.IRequest) {
 	workerID := request.GetConnection().GetConnID() % mh.WorkerPoolSize
-	global.Log.Tracef("%s add connID=%d, request msgID=%d to workerID=%d", mh.ServerType, request.GetConnection().GetConnID(), request.GetMsgID(), workerID)
+	tilog.Log.Tracef("%s add connID=%d, request msgID=%d to workerID=%d", mh.ServerType, request.GetConnection().GetConnID(), request.GetMsgID(), workerID)
 	mh.TaskQueue[workerID] <- request
 }

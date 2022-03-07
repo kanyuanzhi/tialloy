@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
-	"github.com/kanyuanzhi/tialloy/tilog"
 	"net"
 	"sync"
 )
@@ -14,7 +13,7 @@ import (
 type BaseConnection struct {
 	server tiface.IServer // server与connection可以互相索引，使得connection可以通过server.GetConnManager()操作connManager
 
-	Conn interface{}
+	//Conn interface{}
 
 	ConnID     uint32
 	IsClosed   bool
@@ -32,10 +31,10 @@ type BaseConnection struct {
 	propertyLock sync.Mutex
 }
 
-func NewBaseConnection(server tiface.IServer, conn interface{}, connID uint32, msgHandler tiface.IMsgHandler) *BaseConnection {
+func NewBaseConnection(server tiface.IServer, connID uint32, msgHandler tiface.IMsgHandler) *BaseConnection {
 	baseConnection := &BaseConnection{
 		server:     server,
-		Conn:       conn,
+		//Conn:       conn,
 		ConnID:     connID,
 		IsClosed:   false,
 		MsgHandler: msgHandler,
@@ -56,36 +55,15 @@ func (bc *BaseConnection) Start() {
 }
 
 func (bc *BaseConnection) Stop() {
-	bc.Lock()
-	defer bc.Unlock()
-
-	tilog.Log.Warnf("%s connection connID=%d stopped", bc.server.GetServerType(), bc.ConnID)
-
-	bc.server.CallOnConnStop(bc) //链接关闭的回调业务
-
-	if bc.IsClosed == true {
-		return
-	}
-
-	switch bc.server.GetServerType() {
-	case "tcp":
-		bc.Conn.(*net.TCPConn).Close()
-	case "websocket":
-		bc.Conn.(*websocket.Conn).Close()
-	}
-
-	bc.cancel()
-
-	bc.server.GetConnManager().Remove(bc)
-
-	close(bc.msgChan)
-	close(bc.msgBuffChan)
-
-	bc.IsClosed = true
+	panic("implement me")
 }
 
-func (bc *BaseConnection) GetConn() interface{} {
-	return bc.Conn
+func (bc *BaseConnection) GetTcpConn() *net.TCPConn {
+	panic("implement me")
+}
+
+func (bc *BaseConnection) GetWebsocketConn() *websocket.Conn {
+	panic("implement me")
 }
 
 func (bc *BaseConnection) GetConnID() uint32 {
@@ -93,14 +71,7 @@ func (bc *BaseConnection) GetConnID() uint32 {
 }
 
 func (bc *BaseConnection) RemoteAddr() net.Addr {
-	switch bc.server.GetServerType() {
-	case "tcp":
-		return bc.Conn.(*net.TCPConn).RemoteAddr()
-	case "websocket":
-		return bc.Conn.(*websocket.Conn).RemoteAddr()
-	default:
-		return nil
-	}
+	panic("implement me")
 }
 
 func (bc *BaseConnection) SendMsg(msgID uint32, data []byte) error {

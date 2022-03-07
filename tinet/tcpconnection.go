@@ -13,12 +13,14 @@ import (
 
 type TcpConnection struct {
 	*BaseConnection
+	Conn *net.TCPConn
 }
 
 func NewTcpConnection(server tiface.IServer, conn *net.TCPConn, connID uint32, msgHandler tiface.IMsgHandler) tiface.IConnection {
-	baseConnection := NewBaseConnection(server, conn, connID, msgHandler)
+	baseConnection := NewBaseConnection(server, connID, msgHandler)
 	tc := &TcpConnection{
 		BaseConnection: baseConnection,
+		Conn:           conn,
 	}
 	tc.server.GetConnManager().Add(tc) // 初始化新链接时将新链接加入到链接管理模块中,
 	return tc
@@ -96,6 +98,32 @@ func (tc *TcpConnection) StartWriter() {
 	}
 }
 
+func (tc *TcpConnection) Stop() {
+	tc.Lock()
+	defer tc.Unlock()
+
+	tilog.Log.Warnf("%s connection connID=%d stopped", tc.server.GetServerType(), tc.ConnID)
+
+	tc.server.CallOnConnStop(tc) //链接关闭的回调业务
+
+	if tc.IsClosed == true {
+		return
+	}
+
+	if err := tc.GetTcpConn().Close(); err != nil {
+		tilog.Log.Error(err)
+	}
+
+	tc.cancel()
+
+	tc.server.GetConnManager().Remove(tc)
+
+	close(tc.msgChan)
+	close(tc.msgBuffChan)
+
+	tc.IsClosed = true
+}
+
 func (tc *TcpConnection) Start() {
 	tc.ctx, tc.cancel = context.WithCancel(context.Background())
 
@@ -106,7 +134,11 @@ func (tc *TcpConnection) Start() {
 }
 
 func (tc *TcpConnection) GetTcpConn() *net.TCPConn {
-	return tc.Conn.(*net.TCPConn)
+	return tc.Conn
+}
+
+func (tc *TcpConnection) RemoteAddr() net.Addr {
+	return tc.Conn.RemoteAddr()
 }
 
 func (tc *TcpConnection) SendMsg(msgID uint32, data []byte) error {

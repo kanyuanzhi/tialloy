@@ -8,18 +8,21 @@ import (
 	"github.com/kanyuanzhi/tialloy/global"
 	"github.com/kanyuanzhi/tialloy/tiface"
 	"github.com/kanyuanzhi/tialloy/tilog"
+	"net"
 )
 
 type WebsocketConnection struct {
 	*BaseConnection
 	MessageType int
+	Conn        *websocket.Conn
 }
 
 func NewWebsocketConnection(server tiface.IServer, conn *websocket.Conn, connID uint32, msgHandler tiface.IMsgHandler) tiface.IConnection {
-	baseConnection := NewBaseConnection(server, conn, connID, msgHandler)
+	baseConnection := NewBaseConnection(server, connID, msgHandler)
 	wc := &WebsocketConnection{
 		BaseConnection: baseConnection,
 		MessageType:    websocket.TextMessage, // 默认文本协议
+		Conn:           conn,
 	}
 	wc.server.GetConnManager().Add(wc) // 初始化新链接时将新链接加入到链接管理模块中,
 	return wc
@@ -89,6 +92,32 @@ func (wc *WebsocketConnection) StartWriter() {
 	}
 }
 
+func (wc *WebsocketConnection) Stop() {
+	wc.Lock()
+	defer wc.Unlock()
+
+	tilog.Log.Warnf("%s connection connID=%d stopped", wc.server.GetServerType(), wc.ConnID)
+
+	wc.server.CallOnConnStop(wc) //链接关闭的回调业务
+
+	if wc.IsClosed == true {
+		return
+	}
+
+	if err := wc.GetWebsocketConn().Close(); err != nil {
+		tilog.Log.Error(err)
+	}
+
+	wc.cancel()
+
+	wc.server.GetConnManager().Remove(wc)
+
+	close(wc.msgChan)
+	close(wc.msgBuffChan)
+
+	wc.IsClosed = true
+}
+
 func (wc *WebsocketConnection) Start() {
 	wc.ctx, wc.cancel = context.WithCancel(context.Background())
 
@@ -99,7 +128,11 @@ func (wc *WebsocketConnection) Start() {
 }
 
 func (wc *WebsocketConnection) GetWebsocketConn() *websocket.Conn {
-	return wc.Conn.(*websocket.Conn)
+	return wc.Conn
+}
+
+func (wc *WebsocketConnection) RemoteAddr() net.Addr {
+	return wc.Conn.RemoteAddr()
 }
 
 func (wc *WebsocketConnection) SendMsg(msgID uint32, data []byte) error {

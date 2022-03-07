@@ -2,6 +2,7 @@ package tiface
 
 import (
 	"context"
+	"github.com/gorilla/websocket"
 	"net"
 )
 
@@ -9,7 +10,8 @@ type IConnection interface {
 	Start()
 	Stop()
 
-	GetConn() interface{}
+	GetWebsocketConn() *websocket.Conn
+	GetTcpConn() *net.TCPConn
 
 	GetConnID() uint32
 	RemoteAddr() net.Addr
